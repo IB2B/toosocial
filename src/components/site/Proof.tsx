@@ -2,34 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { animate, motion, useInView, useReducedMotion } from "motion/react";
+import { numberLocale, useI18n } from "@/i18n";
+import { Kw } from "./Kw";
 
 /* TODO(copy): every number, source and logo below is a PLACEHOLDER.
-   Replace with real, attributable client results before going live. */
+   Replace with real, attributable client results before going live.
+   Labels and sources live in src/i18n (proof.stats), in the same order. */
 const STATS = [
-  {
-    value: 312,
-    prefix: "+",
-    suffix: "%",
-    decimals: 0,
-    label: "more enquiries in 90 days",
-    source: "Dental clinic, Milan",
-  },
-  {
-    value: 6.8,
-    prefix: "",
-    suffix: "×",
-    decimals: 1,
-    label: "return on ad spend",
-    source: "Restaurant group, Q3 2026",
-  },
-  {
-    value: 1240,
-    prefix: "",
-    suffix: "",
-    decimals: 0,
-    label: "qualified leads this year",
-    source: "Across 18 active clients",
-  },
+  { value: 312, prefix: "+", suffix: "%", decimals: 0 },
+  { value: 6.8, prefix: "", suffix: "×", decimals: 1 },
+  { value: 1240, prefix: "", suffix: "", decimals: 0 },
 ] as const;
 
 const LOGOS = [
@@ -53,6 +35,7 @@ function CountUp({
   prefix: string;
   suffix: string;
 }) {
+  const { locale } = useI18n();
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-15% 0px" });
   const reduce = useReducedMotion();
@@ -68,7 +51,7 @@ function CountUp({
     return () => controls.stop();
   }, [inView, reduce, value]);
 
-  const formatted = n.toLocaleString("en-US", {
+  const formatted = n.toLocaleString(numberLocale[locale], {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
@@ -84,6 +67,8 @@ function CountUp({
 
 export function Proof() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
+  const p = t.proof;
 
   return (
     <section aria-labelledby="proof-title" className="border-t">
@@ -95,12 +80,12 @@ export function Proof() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="mx-auto max-w-[640px] text-center"
         >
-          <p className="eyebrow text-muted-foreground">Results, not reach</p>
+          <p className="eyebrow text-muted-foreground">{p.eyebrow}</p>
           <h2
             id="proof-title"
             className="h2-section mt-4"
           >
-            Numbers you can <em className="kw">count</em>.
+            <Kw text={p.title} />
           </h2>
         </motion.div>
 
@@ -108,18 +93,18 @@ export function Proof() {
         <dl className="mt-12 grid border-y sm:mt-16 sm:grid-cols-3 sm:divide-x">
           {STATS.map((s, i) => (
             <motion.div
-              key={s.label}
+              key={i}
               initial={reduce ? false : { opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-10% 0px" }}
               transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-col items-center gap-2 border-b px-6 py-10 text-center last:border-b-0 sm:border-b-0 sm:py-12"
             >
-              <dt className="order-2 mt-2 text-body text-foreground">{s.label}</dt>
+              <dt className="order-2 mt-2 text-body text-foreground">{p.stats[i].label}</dt>
               <dd className="order-1 text-[52px] font-semibold leading-none tracking-[-0.04em] sm:text-[60px]">
                 <CountUp {...s} />
               </dd>
-              <dd className="order-3 text-small text-muted-foreground">{s.source}</dd>
+              <dd className="order-3 text-small text-muted-foreground">{p.stats[i].source}</dd>
             </motion.div>
           ))}
         </dl>
@@ -127,7 +112,7 @@ export function Proof() {
         {/* logo marquee */}
         <div className="mt-14 sm:mt-16">
           <p className="text-center text-small text-muted-foreground">
-            Trusted by local businesses that would rather meet than email
+            {p.trustedBy}
           </p>
           <div
             className="group relative mt-8 overflow-hidden"

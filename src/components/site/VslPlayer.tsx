@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Play } from "lucide-react";
 import { Rings } from "@/components/brand/Rings";
+import { useI18n } from "@/i18n";
 
 type VslPlayerProps = {
   /** MP4/HLS source. Leave empty until the final video is uploaded. */
@@ -12,6 +13,7 @@ type VslPlayerProps = {
 };
 
 export function VslPlayer({ src, poster, duration = "4 min" }: VslPlayerProps) {
+  const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [started, setStarted] = useState(false);
 
@@ -39,7 +41,7 @@ export function VslPlayer({ src, poster, duration = "4 min" }: VslPlayerProps) {
           type="button"
           onClick={start}
           className="group absolute inset-0 flex flex-col items-center justify-center gap-5 text-foreground outline-none"
-          aria-label={`Watch the video, ${duration}`}
+          aria-label={t.hero.watchAria(duration)}
         >
           {/* poster texture: fine grid + soft rings watermark */}
           {!poster && (
@@ -68,14 +70,14 @@ export function VslPlayer({ src, poster, duration = "4 min" }: VslPlayerProps) {
             <Play className="relative ml-1 size-8 fill-current sm:size-9" strokeWidth={0} />
           </span>
           <span className="relative text-small text-muted-foreground">
-            Watch before you book · {duration}
+            {t.hero.watch} · {duration}
           </span>
         </button>
       )}
 
       {started && !src && (
         <div className="absolute inset-0 grid place-items-center p-6 text-center text-small text-muted-foreground">
-          Your sales video (VSL) goes here.
+          {t.hero.videoPlaceholder}
         </div>
       )}
     </div>

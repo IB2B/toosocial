@@ -1,4 +1,7 @@
+"use client";
+
 import { Logo } from "@/components/brand/Logo";
+import { useI18n } from "@/i18n";
 import { Year } from "./Year";
 
 /* TODO(content): real contact details, social URLs, company data and legal pages. */
@@ -8,12 +11,14 @@ const SOCIAL = [
   { label: "LinkedIn", href: "#linkedin" },
 ];
 
-const LEGAL = [
-  { label: "Privacy policy", href: "#privacy" },
-  { label: "Cookie policy", href: "#cookies" },
-];
-
 export function Footer() {
+  const { t } = useI18n();
+  const ft = t.footer;
+  const LEGAL = [
+    { label: ft.privacy, href: "#privacy" },
+    { label: ft.cookies, href: "#cookies" },
+  ];
+
   return (
     <footer className="dark relative overflow-hidden border-t bg-background text-foreground">
       <div className="mx-auto max-w-[1200px] px-4 pt-16 sm:px-8 sm:pt-20">
@@ -21,17 +26,16 @@ export function Footer() {
           <div>
             <Logo variant="notte" />
             <p className="mt-5 max-w-[34ch] text-body text-muted-foreground">
-              Short-form content, social and performance ads, made by real people. Social in
-              real life before it&apos;s social on your phone.
+              {ft.tagline}
             </p>
           </div>
 
           <div>
-            <p className="eyebrow text-muted-foreground">Talk to us</p>
+            <p className="eyebrow text-muted-foreground">{ft.talk}</p>
             <ul className="mt-4 space-y-2 text-body">
               <li>
                 <a href="#book" className="hover:text-champagne">
-                  Book a call
+                  {ft.book}
                 </a>
               </li>
               <li>
@@ -48,7 +52,7 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="eyebrow text-muted-foreground">Follow</p>
+            <p className="eyebrow text-muted-foreground">{ft.follow}</p>
             <ul className="mt-4 space-y-2 text-body">
               {SOCIAL.map((s) => (
                 <li key={s.label}>
@@ -63,7 +67,7 @@ export function Footer() {
 
         <div className="mt-16 flex flex-col gap-4 border-t py-6 text-[13px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © <Year /> TooSocial · VAT no. 00000000000
+            © <Year /> TooSocial · {ft.vat} 00000000000
           </p>
           <ul className="flex gap-6">
             {LEGAL.map((l) => (

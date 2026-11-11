@@ -12,33 +12,11 @@ import {
 } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
+import { useI18n } from "@/i18n";
+import { Kw } from "./Kw";
 
-const STEPS = [
-  {
-    n: "01",
-    tag: "Meet",
-    title: "We start in person.",
-    body: "A real meeting, at your place or ours. We learn how you sell, who buys, and what one new client is worth to you.",
-  },
-  {
-    n: "02",
-    tag: "Create",
-    title: "Short videos with real faces.",
-    body: "We plan, film and edit content around your people and your offer. You give us a couple of hours a month, we do the rest.",
-  },
-  {
-    n: "03",
-    tag: "Launch",
-    title: "Ads that find buyers, not fans.",
-    body: "Campaigns on Meta and TikTok that send the right people to a page built to turn them into enquiries.",
-  },
-  {
-    n: "04",
-    tag: "Measure",
-    title: "Clients, not likes.",
-    body: "Every month we review enquiries, cost per lead and revenue. If a number isn't moving, we change the plan.",
-  },
-];
+/* step copy lives in src/i18n (method.steps) */
+const stepNo = (i: number) => String(i + 1).padStart(2, "0");
 
 /* ---------------------------------------------------------------
    Rings that travel towards each other and interlock on scroll.
@@ -61,7 +39,13 @@ function arcPath(cx: number, cy: number, from: number, to: number) {
 // A's top crossing sits at ~263.5° in the interlocked position
 const A_OVER = arcPath(0, 0, 245, 282);
 
-function InterlockingRings({ progress }: { progress: MotionValue<number> }) {
+function InterlockingRings({
+  progress,
+  labels,
+}: {
+  progress: MotionValue<number>;
+  labels: { a: string; b: string; together: string };
+}) {
   const ax = useTransform(progress, [0, 0.8], [52, 86]);
   const bx = useTransform(progress, [0, 0.8], [168, 116]);
   const by = useTransform(progress, [0, 0.8], [72, 48]);
@@ -84,7 +68,7 @@ function InterlockingRings({ progress }: { progress: MotionValue<number> }) {
           className="fill-muted-foreground font-sans text-[8px]"
           style={{ opacity: labelsOut }}
         >
-          Your business
+          {labels.a}
         </motion.text>
       </motion.g>
 
@@ -97,7 +81,7 @@ function InterlockingRings({ progress }: { progress: MotionValue<number> }) {
           className="fill-bronzo font-sans text-[8px]"
           style={{ opacity: labelsOut }}
         >
-          TooSocial
+          {labels.b}
         </motion.text>
       </motion.g>
 
@@ -114,7 +98,7 @@ function InterlockingRings({ progress }: { progress: MotionValue<number> }) {
         className="fill-foreground font-serif text-[13px] italic"
         style={{ opacity: together, y: togetherY }}
       >
-        growing together
+        {labels.together}
       </motion.text>
     </svg>
   );
@@ -127,6 +111,9 @@ export function Method() {
   const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });
   const progress = reduce ? scrollYProgress : smooth;
   const [active, setActive] = useState(0);
+  const { t } = useI18n();
+  const m = t.method;
+  const STEPS = m.steps;
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     setActive(Math.min(STEPS.length - 1, Math.max(0, Math.floor(v * STEPS.length * 1.05))));
@@ -145,13 +132,12 @@ export function Method() {
     <section ref={ref} aria-labelledby="method-title" className="relative border-t">
       <div className="mx-auto max-w-[1200px] px-4 py-16 sm:px-8 sm:py-24">
         <motion.div {...reveal} className="max-w-[640px]">
-          <p className="eyebrow text-muted-foreground">How we work</p>
+          <p className="eyebrow text-muted-foreground">{m.eyebrow}</p>
           <h2 id="method-title" className="h2-section mt-4 text-balance">
-            First we <em className="kw">meet</em>, then we create.
+            <Kw text={m.title} />
           </h2>
           <p className="mt-6 max-w-[52ch] text-[18px] leading-[28px] text-muted-foreground sm:text-lead">
-            No anonymous briefs, no ticket systems. Four steps, one team, and a number we
-            agree on before we start.
+            {m.lead}
           </p>
         </motion.div>
 
@@ -160,11 +146,14 @@ export function Method() {
           <div className="sticky top-[72px] z-10 -mx-4 bg-background/95 px-4 py-3 backdrop-blur lg:top-28 lg:mx-0 lg:h-fit lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
             <div className="mx-auto max-w-[200px] sm:max-w-[260px] lg:max-w-none">
               <div className="lg:rounded-lg lg:border lg:p-10">
-                <InterlockingRings progress={progress} />
+                <InterlockingRings
+                  progress={progress}
+                  labels={{ a: m.yourBusiness, b: "TooSocial", together: m.together }}
+                />
                 <div className="mt-2 hidden items-center justify-between lg:flex">
                   {STEPS.map((s, i) => (
                     <span
-                      key={s.n}
+                      key={i}
                       className={`text-small transition-colors duration-300 ${
                         i <= active ? "text-foreground" : "text-muted-foreground/50"
                       }`}
@@ -189,7 +178,7 @@ export function Method() {
               const on = i === active;
               return (
                 <li
-                  key={s.n}
+                  key={i}
                   className={`flex gap-6 border-t py-10 transition-opacity duration-500 last:border-b lg:py-14 ${
                     on ? "opacity-100" : "opacity-40"
                   }`}
@@ -199,7 +188,7 @@ export function Method() {
                       on ? "text-bronzo" : "text-muted-foreground"
                     }`}
                   >
-                    {s.n}
+                    {stepNo(i)}
                   </span>
                   <div>
                     <p className="eyebrow text-muted-foreground">{s.tag}</p>
@@ -218,10 +207,10 @@ export function Method() {
           <Button asChild size="xl">
             <a href="#book">
               <CalendarDays />
-              Book a call
+              {m.book}
             </a>
           </Button>
-          <p className="text-small text-muted-foreground">Step one is a coffee, not a contract.</p>
+          <p className="text-small text-muted-foreground">{m.footnote}</p>
         </motion.div>
       </div>
     </section>

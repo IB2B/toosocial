@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { leadSchema } from "@/lib/lead";
+import { it } from "@/i18n/it";
+import { makeLeadSchema } from "@/lib/lead";
+
+// Server-side check uses the default (Italian) messages; the form shows its own.
+const leadSchema = makeLeadSchema(it.booking.form.errors);
 
 export async function POST(request: Request) {
   let body: unknown;

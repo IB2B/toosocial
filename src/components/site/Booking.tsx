@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, useReducedMotion } from "motion/react";
@@ -10,16 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GOALS, leadSchema, type Lead } from "@/lib/lead";
+import { useI18n } from "@/i18n";
+import { GOAL_VALUES, makeLeadSchema, type Lead } from "@/lib/lead";
+import { Kw } from "./Kw";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
-/* TODO(copy): confirm call length / format before launch */
-const PROMISES = [
-  "30 minutes, by video or in person",
-  "Free, with no obligation",
-  "You leave with ideas you can use either way",
-];
+/* TODO(copy): confirm call length / format (booking.promises in src/i18n) */
 
 function Field({
   id,
@@ -56,6 +53,9 @@ const inputCls =
   "h-12 rounded-md px-4 text-[16px] shadow-none md:text-[16px] focus-visible:ring-[3px]";
 
 function BookingForm({ onDone }: { onDone: (name: string) => void }) {
+  const { t } = useI18n();
+  const tf = t.booking.form;
+  const schema = useMemo(() => makeLeadSchema(tf.errors), [tf.errors]);
   const [serverError, setServerError] = useState<string | null>(null);
   const {
     register,
@@ -63,7 +63,7 @@ function BookingForm({ onDone }: { onDone: (name: string) => void }) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<Lead>({
-    resolver: zodResolver(leadSchema),
+    resolver: zodResolver(schema),
     defaultValues: { name: "", email: "", phone: "", site: "", company: "" },
   });
 
@@ -78,7 +78,7 @@ function BookingForm({ onDone }: { onDone: (name: string) => void }) {
       if (!res.ok) throw new Error(String(res.status));
       onDone(data.name.split(" ")[0]);
     } catch {
-      setServerError("Something went wrong. Try again, or message us on WhatsApp.");
+      setServerError(tf.serverError);
     }
   };
 
@@ -88,10 +88,10 @@ function BookingForm({ onDone }: { onDone: (name: string) => void }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field id="lead-name" label="Your name" error={errors.name?.message}>
+        <Field id="lead-name" label={tf.name} error={errors.name?.message}>
           <Input id="lead-name" autoComplete="name" className={inputCls} {...register("name")} {...aria("name")} />
         </Field>
-        <Field id="lead-email" label="Email" error={errors.email?.message}>
+        <Field id="lead-email" label={tf.email} error={errors.email?.message}>
           <Input
             id="lead-email"
             type="email"
@@ -101,7 +101,7 @@ function BookingForm({ onDone }: { onDone: (name: string) => void }) {
             {...aria("email")}
           />
         </Field>
-        <Field id="lead-phone" label="Phone" hint="Optional" error={errors.phone?.message}>
+        <Field id="lead-phone" label={tf.phone} hint={tf.optional} error={errors.phone?.message}>
           <Input
             id="lead-phone"
             type="tel"
@@ -111,28 +111,28 @@ function BookingForm({ onDone }: { onDone: (name: string) => void }) {
             {...aria("phone")}
           />
         </Field>
-        <Field id="lead-site" label="Website or Instagram" hint="Optional">
-          <Input id="lead-site" placeholder="@yourbusiness" className={inputCls} {...register("site")} />
+        <Field id="lead-site" label={tf.site} hint={tf.optional}>
+          <Input id="lead-site" placeholder={tf.sitePlaceholder} className={inputCls} {...register("site")} />
         </Field>
       </div>
 
       {/* goal chips (radio group) */}
       <fieldset className="space-y-3">
-        <legend className="text-[14px] font-semibold">What do you need most?</legend>
+        <legend className="text-[14px] font-semibold">{tf.goalLegend}</legend>
         <Controller
           control={control}
           name="goal"
           render={({ field }) => (
             <div role="radiogroup" aria-invalid={!!errors.goal} className="flex flex-wrap gap-2">
-              {GOALS.map((g) => {
-                const on = field.value === g.value;
+              {GOAL_VALUES.map((g) => {
+                const on = field.value === g;
                 return (
                   <button
-                    key={g.value}
+                    key={g}
                     type="button"
                     role="radio"
                     aria-checked={on}
-                    onClick={() => field.onChange(g.value)}
+                    onClick={() => field.onChange(g)}
                     className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[14px] font-medium transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
                       on
                         ? "border-primary bg-primary text-primary-foreground"
@@ -140,7 +140,7 @@ function BookingForm({ onDone }: { onDone: (name: string) => void }) {
                     }`}
                   >
                     {on && <Check className="size-3.5" strokeWidth={3} />}
-                    {g.label}
+                    {tf.goals[g]}
                   </button>
                 );
               })}
@@ -174,10 +174,10 @@ function BookingForm({ onDone }: { onDone: (name: string) => void }) {
                 className="mt-0.5 size-5 rounded-[5px] shadow-none"
               />
               <span className="text-[14px] leading-[22px] text-muted-foreground">
-                I agree to be contacted about my request, as described in the{" "}
+                {tf.consentPre}{" "}
                 {/* TODO: link real privacy policy */}
                 <a href="#privacy" className="underline underline-offset-2 hover:text-foreground">
-                  privacy policy
+                  {tf.privacy}
                 </a>
                 .
               </span>
@@ -200,22 +200,24 @@ function BookingForm({ onDone }: { onDone: (name: string) => void }) {
       <Button type="submit" size="xl" disabled={isSubmitting} className="w-full">
         {isSubmitting ? (
           <>
-            <Loader2 className="animate-spin" /> Sending…
+            <Loader2 className="animate-spin" /> {tf.sending}
           </>
         ) : (
           <>
-            Request my call <ArrowRight />
+            {tf.submit} <ArrowRight />
           </>
         )}
       </Button>
       <p className="text-center text-[13px] text-muted-foreground">
-        We reply within 24 business hours. No spam, ever.
+        {tf.reply}
       </p>
     </form>
   );
 }
 
 function Success({ name }: { name: string }) {
+  const { t } = useI18n();
+  const ts = t.booking.success;
   return (
     <div className="flex flex-col items-center py-10 text-center" role="status">
       <Rings
@@ -226,11 +228,10 @@ function Success({ name }: { name: string }) {
         strokeWidth={3.5}
       />
       <h3 className="mt-8 text-[30px] leading-[36px] font-semibold tracking-[-0.03em]">
-        Thanks, {name}. <em className="kw text-champagne!">Talk soon</em>.
+        {ts.thanks(name)} <em className="kw text-champagne!">{ts.kw}</em>.
       </h3>
       <p className="mt-4 max-w-[38ch] text-body text-muted-foreground">
-        Your request is in. One of us will get back to you within 24 business hours to
-        set a time that works.
+        {ts.body}
       </p>
     </div>
   );
@@ -238,6 +239,8 @@ function Success({ name }: { name: string }) {
 
 export function Booking() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
+  const b = t.booking;
   const [doneName, setDoneName] = useState<string | null>(null);
 
   const reveal = (delay = 0) =>
@@ -258,12 +261,12 @@ export function Booking() {
     >
       <div className="relative mx-auto grid max-w-[1200px] gap-12 px-4 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
         <motion.div {...reveal()} className="lg:pt-6">
-          <p className="eyebrow text-muted-foreground">Book a call</p>
-          <h2 id="book-title" className="h2-section mt-4 max-w-[13ch] text-balance">
-            Your next client is one <em className="kw text-champagne!">call</em> away.
+          <p className="eyebrow text-muted-foreground">{b.eyebrow}</p>
+          <h2 id="book-title" className="h2-section mt-4 max-w-[16ch] text-balance">
+            <Kw text={b.title} className="text-champagne!" />
           </h2>
           <ul className="mt-8 space-y-4">
-            {PROMISES.map((p) => (
+            {b.promises.map((p) => (
               <li key={p} className="flex items-center gap-3 text-body text-foreground/85">
                 <span className="grid size-6 shrink-0 place-items-center rounded-full bg-champagne text-notte">
                   <Check className="size-3.5" strokeWidth={3} />
@@ -282,7 +285,7 @@ export function Booking() {
               strokeWidth={3}
             />
             <p className="max-w-[30ch] font-serif text-[22px] leading-[28px] text-foreground/80 italic">
-              Every project starts with a conversation. This is ours.
+              {b.quote}
             </p>
           </div>
         </motion.div>

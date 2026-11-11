@@ -4,13 +4,15 @@ import { motion, useReducedMotion } from "motion/react";
 import { Rings } from "@/components/brand/Rings";
 import { Button } from "@/components/ui/button";
 import { Coffee } from "lucide-react";
+import { useI18n } from "@/i18n";
+import { Kw } from "./Kw";
 
 /* TODO(content): founder names, roles, story and photos are PLACEHOLDERS.
-   Swap `photo` for real portraits (4:5, natural light, not stock). */
+   Swap `photo` for real portraits (4:5, natural light, not stock).
+   Roles, story and facts live in src/i18n (founders.*). */
 const FOUNDERS = [
   {
     name: "Founder One",
-    role: "Strategy & ads",
     photo: undefined as string | undefined,
     tilt: "-rotate-3",
     offset: "lg:translate-y-6",
@@ -18,7 +20,6 @@ const FOUNDERS = [
   },
   {
     name: "Founder Two",
-    role: "Content & filming",
     photo: undefined as string | undefined,
     tilt: "rotate-2",
     offset: "lg:-translate-y-4",
@@ -26,13 +27,10 @@ const FOUNDERS = [
   },
 ];
 
-const FACTS = [
-  { k: "1", v: "team, start to finish" },
-  { k: "100%", v: "projects kicked off in person" },
-  { k: "0", v: "account managers in between" },
-];
+/* fact numbers; their labels are founders.facts in src/i18n */
+const FACT_NUMBERS = ["1", "100%", "0"];
 
-function Portrait({ f, i }: { f: (typeof FOUNDERS)[number]; i: number }) {
+function Portrait({ f, i, role }: { f: (typeof FOUNDERS)[number]; i: number; role: string }) {
   return (
     <figure
       className={`group w-full max-w-[260px] ${f.tilt} ${f.offset} transition-transform duration-500 hover:rotate-0`}
@@ -66,7 +64,7 @@ function Portrait({ f, i }: { f: (typeof FOUNDERS)[number]; i: number }) {
         </div>
         <figcaption className="mt-3 px-1.5 text-antracite">
           <p className="text-[15px] font-semibold tracking-[-0.01em]">{f.name}</p>
-          <p className="text-small text-antracite/60">{f.role}</p>
+          <p className="text-small text-antracite/60">{role}</p>
         </figcaption>
       </div>
     </figure>
@@ -75,6 +73,8 @@ function Portrait({ f, i }: { f: (typeof FOUNDERS)[number]; i: number }) {
 
 export function Founders() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
+  const fo = t.founders;
   const reveal = (delay = 0, y = 20) =>
     reduce
       ? {}
@@ -104,27 +104,19 @@ export function Founders() {
       <div className="relative mx-auto grid max-w-[1200px] items-center gap-14 px-4 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:gap-20">
         <div>
           <motion.div {...reveal()}>
-            <p className="eyebrow text-muted-foreground">The people behind TooSocial</p>
+            <p className="eyebrow text-muted-foreground">{fo.eyebrow}</p>
             <h2 id="founders-title" className="h2-section mt-4 max-w-[18ch] text-balance">
-              You&apos;ll meet <em className="kw text-champagne!">us</em>, not an account
-              manager.
+              <Kw text={fo.title} className="text-champagne!" />
             </h2>
           </motion.div>
 
           <motion.div {...reveal(0.1)} className="mt-6 max-w-[56ch] space-y-4 text-body text-foreground/75">
-            <p>
-              We started TooSocial because we were tired of agencies that sell reach and
-              disappear behind dashboards. We&apos;d rather sit at your table, understand how
-              your business really makes money, and then build content around that.
-            </p>
-            <p>
-              The people who meet you are the people who film, edit and run your campaigns.
-              No hand-offs, no juniors you&apos;ve never seen.
-            </p>
+            <p>{fo.p1}</p>
+            <p>{fo.p2}</p>
           </motion.div>
 
           <motion.dl {...reveal(0.2)} className="mt-10 grid grid-cols-3 gap-4 border-y py-6">
-            {FACTS.map((f) => (
+            {fo.facts.map((label, i) => ({ k: FACT_NUMBERS[i], v: label })).map((f) => (
               <div key={f.v}>
                 <dt className="sr-only">{f.v}</dt>
                 <dd className="text-[32px] leading-none font-semibold tracking-[-0.04em] sm:text-[40px]">
@@ -142,7 +134,7 @@ export function Founders() {
             <Button asChild size="xl">
               <a href="#book">
                 <Coffee />
-                Meet us for a coffee
+                {fo.cta}
               </a>
             </Button>
             <p className="font-serif text-[26px] leading-none text-champagne italic">
@@ -155,7 +147,7 @@ export function Founders() {
         <div className="flex items-center justify-center gap-4 sm:gap-6">
           {FOUNDERS.map((f, i) => (
             <motion.div key={f.name} {...reveal(0.15 + i * 0.15, 40)} className="flex flex-1 justify-center">
-              <Portrait f={f} i={i} />
+              <Portrait f={f} i={i} role={fo.roles[i]} />
             </motion.div>
           ))}
         </div>

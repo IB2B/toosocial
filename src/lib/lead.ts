@@ -1,29 +1,35 @@
 import { z } from "zod";
 
-/** Shared by the booking form (client) and /api/lead (server). */
-export const GOALS = [
-  { value: "enquiries", label: "More enquiries" },
-  { value: "launch", label: "Launch an offer" },
-  { value: "social", label: "Social that works" },
-  { value: "unsure", label: "Not sure yet" },
-] as const;
+/** Shared by the booking form (client) and /api/lead (server).
+ *  Labels for each goal live in src/i18n (booking.form.goals). */
+export const GOAL_VALUES = ["enquiries", "launch", "social", "unsure"] as const;
+export type Goal = (typeof GOAL_VALUES)[number];
 
-export const leadSchema = z.object({
-  name: z.string().trim().min(2, "Tell us your name."),
-  email: z.email("That email doesn't look right."),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^[+\d][\d\s().-]{5,}$/, "That number doesn't look right.")
-    .or(z.literal(""))
-    .optional(),
-  site: z.string().trim().max(200).optional(),
-  goal: z.enum(["enquiries", "launch", "social", "unsure"], {
-    error: "Pick the one that fits best.",
-  }),
-  consent: z.literal(true, { error: "We need your OK to contact you." }),
-  /** honeypot: real people never fill this in (checked in the route) */
-  company: z.string().optional(),
-});
+export type LeadErrors = {
+  name: string;
+  email: string;
+  phone: string;
+  goal: string;
+  consent: string;
+};
 
-export type Lead = z.infer<typeof leadSchema>;
+/** Build the schema with error messages in the visitor's language. */
+export function makeLeadSchema(e: LeadErrors) {
+  return z.object({
+    name: z.string().trim().min(2, e.name),
+    email: z.email(e.email),
+    phone: z
+      .string()
+      .trim()
+      .regex(/^[+\d][\d\s().-]{5,}$/, e.phone)
+      .or(z.literal(""))
+      .optional(),
+    site: z.string().trim().max(200).optional(),
+    goal: z.enum(GOAL_VALUES, { error: e.goal }),
+    consent: z.literal(true, { error: e.consent }),
+    /** honeypot: real people never fill this in (checked in the route) */
+    company: z.string().optional(),
+  });
+}
+
+export type Lead = z.infer<ReturnType<typeof makeLeadSchema>>;

@@ -4,46 +4,34 @@ import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Rings } from "@/components/brand/Rings";
+import { useI18n } from "@/i18n";
+import { Kw } from "./Kw";
 
 /* TODO(copy): all clients, numbers and quotes are PLACEHOLDERS.
-   Replace with real case studies + vertical videos (9:16) before launch. */
+   Replace with real case studies + vertical videos (9:16) before launch.
+   Industry, period, unit, quote and person live in src/i18n (cases.items). */
 const CASES = [
   {
     client: "Studio Riva",
     handle: "@studioriva.dental",
-    industry: "Dental clinic",
-    period: "90 days",
     before: "4",
     after: "31",
-    unit: "enquiries / month",
-    quote: "We stopped chasing likes. Now the calendar fills itself.",
-    person: "Laura R., owner",
     length: "0:48",
     tint: "from-[#efe7da] to-[#e2d6c2]",
   },
   {
     client: "Ferro & Co.",
     handle: "@ferroandco",
-    industry: "Furniture showroom",
-    period: "60 days",
     before: "€38",
     after: "€9",
-    unit: "cost per lead",
-    quote: "They came to the showroom, filmed our team, and the phone started ringing.",
-    person: "Marco F., sales director",
     length: "0:32",
     tint: "from-[#ece9e3] to-[#d9d4ca]",
   },
   {
     client: "Casa Lume",
     handle: "@casalume",
-    industry: "Restaurant",
-    period: "4 months",
     before: "12",
     after: "140",
-    unit: "bookings from Instagram / month",
-    quote: "Real people, real food, real tables booked. No more posting into the void.",
-    person: "Chiara L., co-founder",
     length: "0:41",
     tint: "from-[#f1e9dc] to-[#e5d3b8]",
   },
@@ -80,6 +68,8 @@ function ReelFrame({ c }: { c: (typeof CASES)[number] }) {
 
 export function Cases() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
+  const k = t.cases;
   const reveal = (delay = 0) =>
     reduce
       ? {}
@@ -98,13 +88,13 @@ export function Cases() {
           className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"
         >
           <div className="max-w-[640px]">
-            <p className="eyebrow text-muted-foreground">Case studies</p>
+            <p className="eyebrow text-muted-foreground">{k.eyebrow}</p>
             <h2 id="cases-title" className="h2-section mt-4 text-balance">
-              Real faces. Real <em className="kw">results</em>.
+              <Kw text={k.title} />
             </h2>
           </div>
           <p className="max-w-[36ch] text-body text-muted-foreground">
-            Every number below has a name, a timeframe and a business behind it.
+            {k.side}
           </p>
         </motion.div>
 
@@ -120,7 +110,7 @@ export function Cases() {
                 <button
                   type="button"
                   className="block w-full cursor-pointer rounded-lg text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  aria-label={`Watch the ${c.client} case study, ${c.length}`}
+                  aria-label={k.watchAria(c.client, c.length)}
                 >
                   <ReelFrame c={c} />
                 </button>
@@ -128,10 +118,10 @@ export function Cases() {
                 <div className="flex flex-1 flex-col px-2 pt-5 pb-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary" className="rounded-full font-medium">
-                      {c.industry}
+                      {k.items[i].industry}
                     </Badge>
                     <Badge variant="outline" className="rounded-full font-medium">
-                      {c.period}
+                      {k.items[i].period}
                     </Badge>
                   </div>
 
@@ -150,13 +140,13 @@ export function Cases() {
                         {c.after}
                       </span>
                     </div>
-                    <p className="mt-2 text-small text-muted-foreground">{c.unit}</p>
+                    <p className="mt-2 text-small text-muted-foreground">{k.items[i].unit}</p>
                   </div>
 
                   <blockquote className="mt-4 flex-1 text-body text-foreground">
-                    &ldquo;{c.quote}&rdquo;
+                    &ldquo;{k.items[i].quote}&rdquo;
                   </blockquote>
-                  <p className="mt-3 text-small text-muted-foreground">{c.person}</p>
+                  <p className="mt-3 text-small text-muted-foreground">{k.items[i].person}</p>
                 </div>
               </article>
             </motion.li>

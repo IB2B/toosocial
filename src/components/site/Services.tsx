@@ -3,6 +3,8 @@
 import { motion, useReducedMotion } from "motion/react";
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/i18n";
+import { Kw } from "./Kw";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -56,6 +58,7 @@ function CalendarVisual() {
 
 function ChartVisual() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
   return (
     <div className="relative h-full px-5 pt-6 pb-4">
       <svg viewBox="0 0 200 100" className="h-full w-full" fill="none" preserveAspectRatio="none">
@@ -74,7 +77,7 @@ function ChartVisual() {
         />
       </svg>
       <span className="absolute top-3 right-4 rounded-full bg-background px-2.5 py-1 text-[11px] font-semibold">
-        Enquiries ↑
+        {t.services.chartBadge}
       </span>
     </div>
   );
@@ -104,51 +107,18 @@ function LandingVisual() {
 
 /* ---------- content ---------- */
 
-const SERVICES = [
-  {
-    span: "md:col-span-4",
-    tag: "Content",
-    title: "Short-form video that sells",
-    body: "Reels and TikToks built around your people, your offer and the questions your buyers actually ask.",
-    points: ["Strategy & scripts", "On-site filming", "Editing & subtitles"],
-    Visual: ReelsVisual,
-  },
-  {
-    span: "md:col-span-2",
-    tag: "Social",
-    title: "Profiles that stay alive",
-    body: "A steady calendar, replies handled, and a feed that looks like a business worth calling.",
-    points: ["Content calendar", "Publishing", "Community replies"],
-    Visual: CalendarVisual,
-  },
-  {
-    span: "md:col-span-2",
-    tag: "Ads",
-    title: "Campaigns paid in clients",
-    body: "Meta and TikTok ads optimised for enquiries and bookings, never for vanity reach.",
-    points: ["Targeting & creative tests", "Tracking set-up", "Weekly optimisation"],
-    Visual: ChartVisual,
-  },
-  {
-    span: "md:col-span-4",
-    tag: "Launches",
-    title: "Landing pages & offer launches",
-    body: "When you have something to sell, we build the page, the video and the campaign that fills it.",
-    points: ["Landing page", "Offer & copy", "Launch campaign"],
-    Visual: LandingVisual,
-  },
-];
-
-const INCLUDED = [
-  "Kick-off meeting in person",
-  "Dedicated team",
-  "Monthly results review",
-  "No long lock-in",
-  "WhatsApp line to the team",
+/* layout + visual per card; copy lives in src/i18n (services.items), same order */
+const LAYOUT = [
+  { span: "md:col-span-4", Visual: ReelsVisual },
+  { span: "md:col-span-2", Visual: CalendarVisual },
+  { span: "md:col-span-2", Visual: ChartVisual },
+  { span: "md:col-span-4", Visual: LandingVisual },
 ];
 
 export function Services() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
+  const sv = t.services;
   const reveal = (delay = 0) =>
     reduce
       ? {}
@@ -163,26 +133,27 @@ export function Services() {
     <section aria-labelledby="services-title" className="border-t">
       <div className="mx-auto max-w-[1200px] px-4 py-16 sm:px-8 sm:py-24">
         <motion.div {...reveal()} className="mx-auto max-w-[680px] text-center">
-          <p className="eyebrow text-muted-foreground">What you get</p>
+          <p className="eyebrow text-muted-foreground">{sv.eyebrow}</p>
           <h2 id="services-title" className="h2-section mt-4 text-balance">
-            One team. Every piece that <em className="kw">sells</em>.
+            <Kw text={sv.title} />
           </h2>
           <p className="mx-auto mt-6 max-w-[54ch] text-[18px] leading-[28px] text-muted-foreground sm:text-lead">
-            Content, social, ads and launch pages, planned together so each one pushes the
-            same number: new clients.
+            {sv.lead}
           </p>
         </motion.div>
 
         {/* bento */}
         <ul className="mt-12 grid gap-4 sm:mt-16 md:grid-cols-6 md:gap-5">
-          {SERVICES.map((s, i) => (
+          {sv.items.map((s, i) => {
+            const { span, Visual } = LAYOUT[i];
+            return (
             <motion.li
-              key={s.title}
+              key={i}
               {...reveal(0.05 + i * 0.08)}
-              className={`group flex flex-col rounded-xl border bg-background p-3 ${s.span}`}
+              className={`group flex flex-col rounded-xl border bg-background p-3 ${span}`}
             >
               <div className="h-48 overflow-hidden rounded-lg bg-avorio sm:h-56">
-                <s.Visual />
+                <Visual />
               </div>
               <div className="flex flex-1 flex-col px-3 pt-5 pb-3">
                 <Badge variant="outline" className="w-fit rounded-full font-medium">
@@ -202,7 +173,8 @@ export function Services() {
                 </ul>
               </div>
             </motion.li>
-          ))}
+            );
+          })}
         </ul>
 
         {/* always included */}
@@ -210,9 +182,9 @@ export function Services() {
           {...reveal(0.1)}
           className="mt-10 flex flex-col items-center gap-4 sm:mt-12"
         >
-          <p className="text-small text-muted-foreground">Always included</p>
+          <p className="text-small text-muted-foreground">{sv.alwaysIncluded}</p>
           <ul className="flex flex-wrap justify-center gap-2">
-            {INCLUDED.map((x) => (
+            {sv.included.map((x) => (
               <li key={x}>
                 <Badge variant="secondary" className="rounded-full px-3 py-1 text-[13px] font-medium">
                   {x}

@@ -5,37 +5,27 @@ import { motion, useReducedMotion } from "motion/react";
 import { CalendarDays, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-
-const FOR = [
-  "You run a business with a real product or service people pay for.",
-  "You (or your team) are happy to show your face on camera.",
-  "You could handle more enquiries next month.",
-  "You care about clients and revenue, not just pretty posts.",
-  "You'd rather meet us in person than trade twenty emails.",
-];
-
-const NOT_FOR = [
-  "You're looking for the cheapest posting service.",
-  "You want to go viral, not to get clients.",
-  "You can't give us an hour or two a month.",
-  "You expect results in a week with no ad budget.",
-  "You want someone to buy you followers.",
-];
+import { useI18n } from "@/i18n";
+import { Kw } from "./Kw";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
+/** index into t.fit.verdicts; 3+ ticks counts as a fit */
 function verdict(n: number) {
-  if (n === 0) return { line: "Tick what sounds like you.", fit: false };
-  if (n <= 2) return { line: "A few boxes ticked. Let's see if it fits.", fit: false };
-  if (n <= 4) return { line: "Sounds like a good fit.", fit: true };
-  return { line: "You're exactly who we work best with.", fit: true };
+  if (n === 0) return { i: 0, fit: false };
+  if (n <= 2) return { i: 1, fit: false };
+  if (n <= 4) return { i: 2, fit: true };
+  return { i: 3, fit: true };
 }
 
 export function FitCheck() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
+  const f = t.fit;
+  const FOR = f.forItems;
   const [checked, setChecked] = useState<boolean[]>(() => FOR.map(() => false));
   const n = checked.filter(Boolean).length;
-  const v = verdict(n);
+  const v = { ...verdict(n), line: f.verdicts[verdict(n).i] };
   const baseId = useId();
 
   const reveal = (delay = 0) =>
@@ -52,13 +42,12 @@ export function FitCheck() {
     <section aria-labelledby="fit-title" className="border-t">
       <div className="mx-auto max-w-[1200px] px-4 py-16 sm:px-8 sm:py-24">
         <motion.div {...reveal()} className="mx-auto max-w-[680px] text-center">
-          <p className="eyebrow text-muted-foreground">Is this for you?</p>
+          <p className="eyebrow text-muted-foreground">{f.eyebrow}</p>
           <h2 id="fit-title" className="h2-section mt-4 text-balance">
-            We don&apos;t work with <em className="kw">everyone</em>.
+            <Kw text={f.title} />
           </h2>
           <p className="mx-auto mt-6 max-w-[52ch] text-[18px] leading-[28px] text-muted-foreground sm:text-lead">
-            We take on a handful of clients at a time so each one gets a real team. Here&apos;s
-            how to tell if we&apos;re a match.
+            {f.lead}
           </p>
         </motion.div>
 
@@ -67,10 +56,10 @@ export function FitCheck() {
           <motion.div {...reveal(0.05)} className="flex flex-col rounded-xl border bg-background p-6 sm:p-8">
             <div className="flex items-baseline justify-between gap-4">
               <h3 className="text-[24px] leading-[30px] font-semibold tracking-[-0.025em]">
-                This is for you if…
+                {f.forTitle}
               </h3>
               <span className="shrink-0 text-small text-muted-foreground tabular-nums" aria-live="polite">
-                {n} of {FOR.length}
+                {n} {f.of} {FOR.length}
               </span>
             </div>
 
@@ -130,7 +119,7 @@ export function FitCheck() {
               >
                 <a href="#book">
                   <CalendarDays />
-                  {v.fit ? "Book your call" : "Book a call"}
+                  {v.fit ? f.bookFit : f.book}
                 </a>
               </Button>
             </div>
@@ -142,10 +131,10 @@ export function FitCheck() {
             className="dark flex flex-col rounded-xl bg-background p-6 text-foreground sm:p-8"
           >
             <h3 className="text-[24px] leading-[30px] font-semibold tracking-[-0.025em]">
-              It&apos;s <em className="kw text-champagne!">not</em> for you if…
+              <Kw text={f.notTitle} className="text-champagne!" />
             </h3>
             <ul className="mt-6 flex-1 divide-y">
-              {NOT_FOR.map((item) => (
+              {f.notItems.map((item) => (
                 <li key={item} className="flex items-start gap-4 py-4">
                   <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border text-muted-foreground">
                     <X className="size-3" strokeWidth={2.5} />
@@ -155,8 +144,7 @@ export function FitCheck() {
               ))}
             </ul>
             <p className="mt-6 border-t pt-6 text-small text-muted-foreground">
-              Honest beats busy. If we&apos;re not the right partner, we&apos;ll tell you on the
-              call and point you somewhere better.
+              {f.notNote}
             </p>
           </motion.div>
         </div>

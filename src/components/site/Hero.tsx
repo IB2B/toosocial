@@ -5,6 +5,8 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { Rings } from "@/components/brand/Rings";
 import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
+import { useI18n } from "@/i18n";
+import { Kw } from "./Kw";
 import { VslPlayer } from "./VslPlayer";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -83,6 +85,8 @@ function BackdropRings() {
 }
 
 export function Hero() {
+  const { t } = useI18n();
+  const h = t.hero;
   return (
     <section id="top" className="relative isolate overflow-hidden">
       <BackdropRings />
@@ -90,23 +94,21 @@ export function Hero() {
       <div className="relative mx-auto max-w-[1200px] px-4 pt-16 pb-16 sm:px-8 sm:pt-24 sm:pb-24">
         <div className="mx-auto max-w-[880px] text-center">
           <Reveal>
-            <p className="eyebrow text-muted-foreground">Content · Ads · Consulting</p>
+            <p className="eyebrow text-muted-foreground">{h.eyebrow}</p>
           </Reveal>
 
           <Reveal delay={0.08}>
             <h1 className="h1-hero mt-5 text-balance text-foreground">
-              <span className="block">You don&apos;t need more views.</span>
+              <span className="block">{h.line1}</span>
               <span className="block">
-                You need <em className="kw">clients</em>.
+                <Kw text={h.line2} />
               </span>
             </h1>
           </Reveal>
 
           <Reveal delay={0.16}>
             <p className="mx-auto mt-6 max-w-[60ch] text-[18px] leading-[28px] text-muted-foreground sm:text-lead">
-              In this video we show you how we turn short-form video, social media and ad
-              campaigns into real enquiries. Every project starts with a real meeting, not an
-              anonymous brief.
+              {h.lead}
             </p>
           </Reveal>
         </div>
@@ -126,10 +128,10 @@ export function Hero() {
           <Button asChild size="xl">
             <a href="#book">
               <CalendarDays />
-              Book a call
+              {h.book}
             </a>
           </Button>
-          <p className="text-small text-muted-foreground">We reply within 24 business hours.</p>
+          <p className="text-small text-muted-foreground">{h.reply}</p>
         </Reveal>
       </div>
     </section>
