@@ -1,26 +1,182 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------
+   TooSocial Identity Kit v1.0 — brand tokens
+   ------------------------------------------------------------------ */
+@theme {
+  /* Main version (dark) */
+  --color-notte: #0f1b2d;
+  --color-carta: #f1ece2;
+  --color-champagne: #d9c3a0;
+  /* Light version */
+  --color-avorio: #f4efe6;
+  --color-antracite: #1f1e1c;
+  --color-bronzo: #9a7b4f;
+
+  --font-serif: var(--font-instrument-serif), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-rethink-sans), Inter, system-ui, Arial, sans-serif;
+
+  /* Landing type scale */
+  --text-eyebrow: 12px;
+  --text-eyebrow--letter-spacing: 0.18em;
+  --text-lead: 20px;
+  --text-lead--line-height: 30px;
+  --text-body: 17px;
+  --text-body--line-height: 27px;
+  --text-small: 14px;
+  --text-small--line-height: 22px;
 }
 
+/* shadcn/ui semantic tokens, mapped to the brand */
 @theme inline {
+  --radius-sm: 4px; /* fields, tags */
+  --radius-md: 10px; /* buttons */
+  --radius-lg: 18px; /* cards, video */
+  --radius-xl: 24px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Light (default): white page, antracite text, bronze accent */
+:root {
+  --radius: 10px;
+  --background: #ffffff;
+  --foreground: #1f1e1c;
+  --card: #ffffff;
+  --card-foreground: #1f1e1c;
+  --popover: #ffffff;
+  --popover-foreground: #1f1e1c;
+  --primary: #1f1e1c; /* buttons on light = antracite (kit §04) */
+  --primary-foreground: #f4efe6;
+  --secondary: #f4efe6;
+  --secondary-foreground: #1f1e1c;
+  --muted: #f4efe6;
+  --muted-foreground: #6b675f;
+  --accent: #f4efe6;
+  --accent-foreground: #1f1e1c;
+  --destructive: #b3412e;
+  --border: #e6dfd2;
+  --input: #e6dfd2;
+  --ring: #9a7b4f;
+}
+
+/* Dark (blu notte) — for sections that use the main version */
+.dark {
+  --background: #0f1b2d;
+  --foreground: #f1ece2;
+  --card: #15243a;
+  --card-foreground: #f1ece2;
+  --popover: #15243a;
+  --popover-foreground: #f1ece2;
+  --primary: #d9c3a0; /* champagne button on blue */
+  --primary-foreground: #0f1b2d;
+  --secondary: #15243a;
+  --secondary-foreground: #f1ece2;
+  --muted: #15243a;
+  --muted-foreground: #a9adb5;
+  --accent: #15243a;
+  --accent-foreground: #f1ece2;
+  --destructive: #e0715d;
+  --border: rgb(241 236 226 / 12%);
+  --input: rgb(241 236 226 / 15%);
+  --ring: #d9c3a0;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  ::selection {
+    background: var(--color-champagne);
+    color: var(--color-antracite);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Headlines: clean sans (Rethink Sans SemiBold, tight tracking)… */
+.h1-hero {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: clamp(40px, 5.6vw, 68px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+
+.h2-section {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+@media (min-width: 640px) {
+  .h2-section {
+    font-size: 46px;
+  }
+}
+
+/* …with ONE keyword per headline in the serif italic (brand signature) */
+.kw {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.14em; /* serif runs small next to a heavy sans */
+  letter-spacing: -0.01em;
+  line-height: 0.9;
+  padding-right: 0.04em; /* keep the italic overhang off the period */
+  color: var(--color-bronzo);
+}
+
+.eyebrow {
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--text-eyebrow--letter-spacing);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* infinite logo strip: list is duplicated, so -50% loops seamlessly */
+@keyframes marquee {
+  to {
+    transform: translateX(calc(-50% - 2rem));
+  }
+}
+.marquee {
+  animation: marquee 38s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
